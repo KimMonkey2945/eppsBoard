@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.epps.board.dao.BoardDao">
+
+    <resultMap type="com.epps.board.vo.BoardVo" id="boardVo">
+        <result property="boardId" column="BOARD_ID"/>
+        <result property="boardCompany" column="BOARD_COMPANY"/>
+        <result property="boardDate" column="BOARD_DATE"/>
+        <result property="boardWriter" column="BOARD_WRITER"/>
+        <result property="boardTitle" column="BOARD_TITLE"/>
+        <result property="boardPassword" column="BOARD_PASSWORD"/>
+        <result property="boardContent" column="BOARD_CONTENT"/>
+    </resultMap>
+
+
+    <insert id="boardRegister" parameterType="com.epps.board.vo.BoardVo">
+        INSERT INTO
+        NOTICE_YONGHYEON
+        (BOARD_ID
+        ,BOARD_COMPANY
+        ,BOARD_DATE
+        ,BOARD_WRITER
+        ,BOARD_TITLE
+        ,BOARD_PASSWORD
+        ,BOARD_CONTENT)
+        VALUES
+        (BOARD_ID.NEXTVAL
+        ,#{boardCompany}
+        ,#{boardDate}
+        ,#{boardWriter}
+        ,#{boardTitle}
+        ,#{boardPassword}
+        ,#{boardContent}
+        )
+    </insert>
+
+    <select id="boardList" resultMap="boardVo">
+        SELECT
+        BOARD_ID,
+        BOARD_COMPANY,
+        BOARD_TITLE,
+        BOARD_WRITER,
+        TO_CHAR(BOARD_DATE, 'YYYY-MM-DD') AS BOARD_DATE
+        FROM
+        NOTICE_YONGHYEON
+        ORDER BY BOARD_ID DESC
+    </select>
+
+
+
+</mapper>
