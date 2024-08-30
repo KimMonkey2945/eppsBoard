@@ -100,10 +100,11 @@ public class BoardController {
     }
 
     @GetMapping("/update")
-    public String updateBoard(@RequestParam String boardId, Model model){
+    public String updateBoard(@RequestParam String boardId, Criteria cri, Model model){
         List<BoardVo> boardList = boardService.checkPassword(boardId);
         logger.info("boardList = {}", boardList);
         model.addAttribute("boardList", boardList);
+        model.addAttribute("cri", cri);
         return "update";
     }
 

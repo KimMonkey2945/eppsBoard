@@ -107,6 +107,8 @@
         </table>
 
         </c:forEach>
+        <input id="pageNum" type="hidden" name="pageNum" value="${cri.pageNum}">
+        <input id="amount" type="hidden" name="amount" value="${cri.amount}">
         <div class="button-container">
             <input id="register" type="button" value="저장">
             <input id="close" type="button" value="닫기">
@@ -211,6 +213,8 @@
         });
 
        $("#register").on("click", function(){
+            let pageNum = $("#pageNum").val();
+            let amount = $("#amount").val();
 
            //유효성 검사
            if(validation()){
@@ -226,7 +230,9 @@
 
                                 if(response.response == "success"){
                                     alert("게시물이 저장되었습니다.")
-                                    window.location.href = '/boardList';
+                                    window.location.href = '/boardList?pageNum=' + pageNum + "&amount=" + amount;
+
+
                                 }else{
                                     alert("처리중에러가 발생하였습니다.")
                                 }

@@ -152,7 +152,7 @@
             <tbody>
                 <c:forEach var="board" items="${boardList}" varStatus="status">
                     <tr>
-                        <input id="boardId" type="hidden" value="${board.boardId}" name="boardId">
+                        <input id="boardId" type="hidden" value="${board.boardId}">
                         <td style="width:8%; border: 1px solid;"><input class="checkbox" type="checkbox"></td>
                         <td style="width:8%; border: 1px solid;">${board.boardCompany}</td>
                         <td style="width:8%; border: 1px solid;">${board.rn}</td>
@@ -204,8 +204,8 @@
         </div>
     </form>
     <form id="moveForm" method="get">
-        <input type="hidden" name="pageNum" value="${pageMaker.cri.pageNum}">
-        <input type="hidden" name="amount" value="${pageMaker.cri.amount}">
+        <input id="pageNum" type="hidden" name="pageNum" value="${pageMaker.cri.pageNum}">
+        <input id="amount" type="hidden" name="amount" value="${pageMaker.cri.amount}">
     </form>
 
     <div id="passwordModal" class="modal">
@@ -331,6 +331,8 @@
             submit.on("click", function() {
                 let password = $("#passwordInput").val();
                 let boardId = '';
+                let pageNum = $("#pageNum").val();
+                let amount = $("#amount").val();
 
                  $(".checkbox:checked").each(function() {
                     let row = $(this).closest("tr");
@@ -353,7 +355,7 @@
                         if(response.response == 'success'){
                          modal.hide();
                          alert("수정페이지로 이동합니다.")
-                         window.location.href="/update?boardId=" + data.boardId
+                         window.location.href="/update?boardId=" + data.boardId + "&pageNum=" + pageNum  + "&amount=" + amount;
                          }else{
                            alert("비밀번호가 틀립니다.")
                          }

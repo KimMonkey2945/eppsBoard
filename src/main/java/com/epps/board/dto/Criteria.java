@@ -1,5 +1,6 @@
 package com.epps.board.dto;
 
+import com.epps.board.vo.BoardVo;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -14,6 +15,7 @@ public class Criteria {
 
     /* 한 페이지 당 보여질 게시물 갯수 */
     private int amount;
+
     public Criteria() {
         this(1,10);
     }
