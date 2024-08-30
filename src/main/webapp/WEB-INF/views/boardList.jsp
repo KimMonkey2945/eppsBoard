@@ -452,7 +452,11 @@
                                         '<td style="width:8%; border: 1px solid;"><input type="checkbox"></td>' +
                                         '<td style="width:8%; border: 1px solid;">' + (board.boardCompany || '') + '</td>' +
                                         '<td style="width:8%; border: 1px solid;">' + (board.rn || '') + '</td>' +
-                                        '<td style="width:50%; border: 1px solid;">' + (board.boardTitle || '') + '</td>' +
+
+                                        '<td style="width:50%; border: 1px solid;">' +
+                                          '<a href="#" class="boardTitleLink" data-board-id="' + (board.boardId || '') + '">' + (board.boardTitle || '') + '</a>' +
+                                        '</td>' +
+
                                         '<td style="width:13%; border: 1px solid;">' + (board.boardWriter || '') + '</td>' +
                                         '<td style="width:13%; border: 1px solid;">' + (board.boardDate || '') + '</td>' +
                                     '</tr>';
