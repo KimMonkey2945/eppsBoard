@@ -52,6 +52,59 @@
         .button-container {
             text-align: right; /* 버튼을 우측으로 정렬 */
         }
+        .pageInfoBtn a {
+            text-decoration: none; /* 링크 밑줄 제거 */
+            color: #333; /* 링크 색상 */
+        }
+        #pageInfo {
+            list-style: none; /* 기본 불릿 제거 */
+            padding: 0; /* 기본 패딩 제거 */
+            margin: 0; /* 기본 마진 제거 */
+            display: flex; /* flexbox로 가로 정렬 */
+            gap: 10px; /* 버튼 사이의 간격 */
+        }
+        /* 모달 배경 */
+        .modal {
+            display: none; /* 기본적으로 숨김 */
+            position: fixed;
+            z-index: 1000; /* 페이지 내 다른 콘텐츠들 위에 표시 */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0); /* 배경색 제거 */
+        }
+
+        /* 모달 컨텐츠 */
+        .modal-content {
+            background-color: #fefefe; /* 모달 내용의 배경색 */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            position: absolute; /* 절대 위치로 설정 */
+            top: 40%; /* 상단에서 10px 떨어진 위치 */
+            left: 50%; /* 화면 가로 중앙으로 이동 */
+            transform: translateX(-50%); /* 중앙 정렬 */
+        }
+
+        /* 닫기 버튼 */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+
     </style>
 </head>
 <body>
@@ -70,8 +123,8 @@
                 </td>
                 <td class="no-border" style="width:65px;">등록일자</td>
                 <td class="">
-                    <input style="width:100px; display: inline-block;" class="datepicker" id="startDate" name="boardDate"> ~
-                    <input style="width:100px; display: inline-block;" class="datepicker" id="endDate" name="boardDate">
+                    <input style="width:100px; display: inline-block;" class="datepicker" id="startDate" name="startDate"> ~
+                    <input style="width:100px; display: inline-block;" class="datepicker" id="endDate" name="endDate">
                 </td>
                 <td class="label-cell no-border">등록자</td>
                 <td class="input-cell"><input id="boardWriter" type="text" name="boardWriter"></td>
@@ -82,35 +135,67 @@
             </tr>
         </table>
         <div class="button-container">
-                <input id="register" type="button" value="조회">
+                <input style="margin-bottom: 10px;" id="search" type="button" value="조회">
         </div>
 
-        <table class="boardList" style=" text-align:center; ">
-            <tr>
-                <td style="width:8%; text-align:center; border: 1px solid;">선택</td>
-                <td style="width:8%; text-align:center; border: 1px solid;">회사</td>
-                <td style="width:8%; text-align:center; border: 1px solid;">순번</td>
-                <td style="width:50%; text-align:center; border: 1px solid;">제목</td>
-                <td style="width:13%; text-align:center; border: 1px solid;">등록자</td>
-                <td style="width:13%; text-align:center; border: 1px solid;">등록일자</td>
-            </tr>
+        <table id="boardList" class="boardList" style=" text-align:center; ">
+            <thead>
+                <tr>
+                    <td style="width:8%; text-align:center; border: 1px solid;">선택</td>
+                    <td style="width:8%; text-align:center; border: 1px solid;">회사</td>
+                    <td style="width:8%; text-align:center; border: 1px solid;">순번</td>
+                    <td style="width:50%; text-align:center; border: 1px solid;">제목</td>
+                    <td style="width:13%; text-align:center; border: 1px solid;">등록자</td>
+                    <td style="width:13%; text-align:center; border: 1px solid;">등록일자</td>
+                </tr>
+            </thead>
+            <tbody>
                 <c:forEach var="board" items="${boardList}" varStatus="status">
                     <tr>
-                        <input id="boardId" type="hidden" value="${board.boardId}">
-                        <td style="width:8%; border: 1px solid;"><input type="checkbox"></td>
+                        <input id="boardId" type="hidden" value="${board.boardId}" name="boardId">
+                        <td style="width:8%; border: 1px solid;"><input class="checkbox" type="checkbox"></td>
                         <td style="width:8%; border: 1px solid;">${board.boardCompany}</td>
-                        <td style="width:8%; border: 1px solid;">${fn:length(boardList) - status.index}</td>
-                        <td style="width:50%; border: 1px solid;">${board.boardTitle}</td>
+                        <td style="width:8%; border: 1px solid;">${board.rn}</td>
+                        <td style="width:50%; border: 1px solid;">
+                          <a href="#" class="boardTitleLink" data-board-id="${board.boardId}" >${board.boardTitle}</a>
+                        </td>
                         <td style="width:13%; border: 1px solid;">${board.boardWriter}</td>
                         <td style="width:13%; border: 1px solid;">${board.boardDate}</td>
                     </tr>
                 </c:forEach>
+
             <tr>
+                <td colspan="3">
+                    <div id="searchPage">
+                        <ul id="pageInfo">
+                            <li class="pageInfoBtn first"><a href="1"> << </a></li>
+
+                            <c:if test="${pageMaker.prev}">
+                                <li class="pageInfoBtn previous"><a href="${pageMaker.startPage-1}"> < </a></li>
+                            </c:if>
+
+                           <c:forEach var="num" begin="${pageMaker.startPage}" end="${pageMaker.endPage}">
+                               <li class="pageInfo_btn"><a href="${num}">${num}</a></li>
+                           </c:forEach>
+
+                            <c:if test="${pageMaker.next}">
+                                <li class="pageInfoBtn next"><a href="${pageMaker.endPage + 1 }"> > </a></li>
+                            </c:if>
+
+                            <li class="pageInfoBtn last"><a href="${pageMaker.totalPages}"> >> </a></li>
+                        </ul>
+                    </div>
+                </td>
+                <td></td>
+                <td></td>
                 <td>
-                    <div style="display: inline-block; text-align: left;">페이징자리</div>
-                    <div style="display: inline-block; text-align: right;">total: ${total}</div>
+                    <!-- 총 항목 수 표시 -->
+                    <div style=" text-align: right;">
+                        total: ${pageMaker.total}
+                    </div>
                 </td>
             </tr>
+            </tbody>
         </table>
         <div class="button-container">
             <input id="register" type="button" value="등록">
@@ -118,24 +203,46 @@
             <input id="delete" type="button" value="삭제">
         </div>
     </form>
+    <form id="moveForm" method="get">
+        <input type="hidden" name="pageNum" value="${pageMaker.cri.pageNum}">
+        <input type="hidden" name="amount" value="${pageMaker.cri.amount}">
+    </form>
+
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>비밀번호를 입력하세요:</p>
+            <input type="password" id="passwordInput" placeholder="비밀번호">
+            <button id="submitPassword">확인</button>
+        </div>
+    </div>
+
 </body>
 
 <script type="text/javascript">
+
+    let moveForm = $("#moveForm");
+
 
     // serializeObject 구현
     $.fn.serializeObject = function() {
         var obj = {};
         var formArray = this.serializeArray();
+
         $.each(formArray, function() {
-            if (obj[this.name]) {
-                if (!obj[this.name].push) {
-                    obj[this.name] = [obj[this.name]];
+            // 값이 비어있지 않을 때만 객체에 추가
+            if (this.value.trim()) {
+                if (obj[this.name]) {
+                    if (!Array.isArray(obj[this.name])) {
+                        obj[this.name] = [obj[this.name]];
+                    }
+                    obj[this.name].push(this.value);
+                } else {
+                    obj[this.name] = this.value;
                 }
-                obj[this.name].push(this.value || '');
-            } else {
-                obj[this.name] = this.value || '';
             }
         });
+
         return obj;
     };
 
@@ -153,45 +260,241 @@
       yearSuffix: '년'
     });
 
+    // 유효성 검사
+   function validation(){
+        let boardCompany = $('#boardCompany').val();
+        if (!boardCompany) {
+            alert('회사를 선택해주세요.');
+            return false;
+        }
+        return true;
+   };
+
+   // 등록 클릭시 이동
+   $('#register').on('click', function(){
+        window.location.href="http://localhost:9090";
+   });
+
+   //
+   $(".checkbox").on("change", function(){
+       if ($(".checkbox:checked").length > 0) {
+           $(".checkbox").not(this).prop("disabled", true).addClass("disabled");
+       } else {
+           $(".checkbox").prop("disabled", false).removeClass("disabled");
+       }
+   });
+
 
     $(function(){
 
-       // datepicker 오늘 날짜 고정 및 이전 날짜 선택 불가
-       let today = new Date();
-       $('.datepicker').datepicker({
-           minDate: 0
-       }).datepicker('setDate', today);
+        // 페이지 이동
+        $('#pageInfo a').on('click', function(e){
+            e.preventDefault();
+            moveForm.find("input[name='pageNum']").val($(this).attr("href"));
+            moveForm.attr('action', '/boardList');
+            moveForm.submit();
+        });
 
-       // 글자 수 체크 이벤트
-       $('#boardContent').on('keyup', function() {
-           checkTextCount('#boardContent', '#textCount', 1000);
+       // 게시물 제목 클릭 시 상세 페이지로 이동
+       $('#boardList').on('click', '.boardTitleLink', function(e) {
+           e.preventDefault();
+           let boardId = $(this).data("board-id");
+           console.log('boardId : ', boardId)
+           window.location.href = '/detail?boardId=' + boardId;
        });
 
-       $("#register").on("click", function(){
+       // datepicker 오늘 날짜 고정 및 이전 날짜 선택 불가
+       let today = new Date();
+       $('#endDate').datepicker({
+           maxDate: 0
+       }).datepicker('setDate', today);
+       $('#startDate').datepicker({maxDate: 0}).datepicker('setDate', '-1M');
 
-           //유효성 검사
-           if(validation()){
-                if (confirm("저장하시겠습니까?")) {
-                    let data = $('#boardRegister').serializeObject();
-                    console.log('Json으로 변환 : ' ,  JSON.stringify(data));
-                         $.ajax({
-                             url: '/register',
-                             type: 'POST',
-                             data: JSON.stringify(data),
-                             contentType: 'application/json',
-                             success: function(response) {
+       // 수정
+       $("#update").on("click", function(){
 
-                             },
-                              error: function(jqXHR, textStatus, errorThrown) {
-                                 alert('실패');
-                             }
-                         });
-                } else {
-                    alert('저장이 취소되었습니다.');
-                }
-           };
+           let modal = $("#passwordModal");
+           let close = $(".close");
+           let submit = $("#submitPassword");
+
+            if($(".checkbox:checked").length == 0){
+                alert("수정할 게시글을 먼저 선택해주세요.")
+                return;
+            }
+            modal.show();
+
+            close.on("click", function() {
+               modal.hide();
+            });
+
+            // 확인 버튼 클릭 시 비밀번호 확인 비밀번호가 비어있는지 체크
+            submit.on("click", function() {
+                let password = $("#passwordInput").val();
+                let boardId = '';
+
+                 $(".checkbox:checked").each(function() {
+                    let row = $(this).closest("tr");
+                    boardId = row.find("input[type='hidden']").val();
+                    return false;
+                });
+                let data = {
+                    boardId: boardId,
+                    boardPassword: password
+                };
+
+                console.log("data ", data);
+
+                 $.ajax({
+                     url: '/checkPassword',
+                     type: 'POST',
+                     data: JSON.stringify(data),
+                     contentType: 'application/json',
+                     success: function(response) {
+                        if(response.response == 'success'){
+                         modal.hide();
+                         alert("수정페이지로 이동합니다.")
+                         window.location.href="/update?boardId=" + data.boardId
+                         }else{
+                           alert("비밀번호가 틀립니다.")
+                         }
+                     },
+                     error: function(jqXHR, textStatus, errorThrown) {
+                         alert('실패');
+                     }
+                 });
+
+            });
+       });
+
+       // 삭제
+       $("#delete").on("click", function(){
+            let modal = $("#passwordModal");
+            let close = $(".close");
+            let submit = $("#submitPassword");
+
+            if($(".checkbox:checked").length == 0){
+                alert("삭제할 게시글을 먼저 선택해주세요.")
+                return;
+            }
+            modal.show();
+
+            close.on("click", function() {
+               modal.hide();
+            });
+
+            // 확인 버튼 클릭 시 비밀번호 확인 비밀번호가 비어있는지 체크
+            submit.on("click", function() {
+                let password = $("#passwordInput").val();
+                let boardId = '';
+
+                 $(".checkbox:checked").each(function() {
+                    let row = $(this).closest("tr");
+                    boardId = row.find("input[type='hidden']").val();
+                    return false;
+                });
+                let data = {
+                    boardId: boardId,
+                    boardPassword: password
+                };
+
+                console.log("data ", data);
+
+                 $.ajax({
+                     url: '/deleteBoard',
+                     type: 'POST',
+                     data: JSON.stringify(data),
+                     contentType: 'application/json',
+                     success: function(response) {
+                        if(response.response == 'success'){
+                         modal.hide();
+                         alert("삭제완료")
+                         location.reload();
+                         }else{
+                           alert("비밀번호가 틀립니다.")
+                         }
+                     },
+                     error: function(jqXHR, textStatus, errorThrown) {
+                         alert('실패');
+                     }
+                 });
+            });
+
+       });
 
 
+       // 조회
+       $("#search").on("click", function(){
+
+         //유효성 검사
+         if(validation()){
+
+          let data = $('#searchBoard').serializeObject();
+          console.log('Json으로 변환 : ' ,  JSON.stringify(data));
+               $.ajax({
+                   url: '/searchBoardList',
+                   type: 'POST',
+                   data: JSON.stringify(data),
+                   contentType: 'application/json',
+                   success: function(response) {
+                        let boardList = response.boardList || [];
+                        let pageMaker = response.pageMaker;
+
+                        $('#boardList tbody').empty();
+
+                         if(boardList.length >= 1) {
+                            let str = '';
+                            boardList.forEach(function(board) {
+                                let rowHTML =
+                                    '<tr>' +
+                                        '<input id="boardId-' + (board.boardId || '') + '" type="hidden" value="' + (board.boardId || '') + '">' +
+                                        '<td style="width:8%; border: 1px solid;"><input type="checkbox"></td>' +
+                                        '<td style="width:8%; border: 1px solid;">' + (board.boardCompany || '') + '</td>' +
+                                        '<td style="width:8%; border: 1px solid;">' + (board.rn || '') + '</td>' +
+                                        '<td style="width:50%; border: 1px solid;">' + (board.boardTitle || '') + '</td>' +
+                                        '<td style="width:13%; border: 1px solid;">' + (board.boardWriter || '') + '</td>' +
+                                        '<td style="width:13%; border: 1px solid;">' + (board.boardDate || '') + '</td>' +
+                                    '</tr>';
+                            $('#boardList tbody').append(rowHTML);
+                        });
+
+                        let pageInfoHTML = '';
+                            pageInfoHTML += '<li class="pageInfoBtn first"><a href="1"> << </a></li>';
+                            if (pageMaker.prev) {
+                                pageInfoHTML += '<li class="pageInfoBtn previous"><a href="' + (pageMaker.startPage - 1) + '"> < </a></li>';
+                            }
+
+                            for (let num = pageMaker.startPage; num <= pageMaker.endPage; num++) {
+                                pageInfoHTML += '<li class="pageInfo_btn"><a href="' + num + '">' + num + '</a></li>';
+                            }
+
+                            if (pageMaker.next) {
+                                pageInfoHTML += '<li class="pageInfoBtn next"><a href="' + (pageMaker.endPage + 1) + '"> > </a></li>';
+                            }
+
+                            pageInfoHTML += '<li class="pageInfoBtn last"><a href="' + pageMaker.totalPages + '"> >> </a></li>';
+
+                            let totalHTML = '<div style="text-align: right;">total: ' + pageMaker.total + '</div>';
+
+                            let pagingHTML = '<tr>' +
+                                          '<td colspan="3">' +
+                                          '<div id="searchPage">' +
+                                          '<ul id="pageInfo">' + pageInfoHTML + '</ul>' +
+                                          '</div>' +
+                                          '</td>' +
+                                          '<td></td>' +
+                                          '<td></td>' +
+                                          '<td>' + totalHTML + '</td>' +
+                                          '</tr>';
+                            // 기존 페이징 UI 제거 후 새로 추가
+                            $('#boardList tbody').append(pagingHTML);
+                     }
+
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                       alert('조회 실패');
+                    }
+               });
+         };
 
        });
 

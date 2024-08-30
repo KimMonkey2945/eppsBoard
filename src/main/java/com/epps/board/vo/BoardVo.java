@@ -16,5 +16,9 @@ public class BoardVo {
     private String boardPassword;
     private String boardContent;
 
+    private int rn;
+    private String startDate;
+    private String endDate;
+
 
 }

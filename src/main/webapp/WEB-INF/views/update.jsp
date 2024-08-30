@@ -1,5 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="ko">
 <head>
@@ -47,33 +51,43 @@
         .button-container {
                    text-align: right; /* 버튼을 우측으로 정렬 */
         }
+        select {
+              pointer-events: none; /* 클릭 및 선택 방지 */
+              background-color: #e9ecef; /* 읽기 전용 느낌을 주기 위한 스타일 */
+        }
     </style>
 </head>
 <body>
-    <form id="boardRegister">
+    <form id="boardUpdate">
         <table>
-            <tr>
-                <td class="label-cell no-border">회사</td>
-                <td class="input-cell">
-                    <select id="boardCompany" name="boardCompany">
-                        <option value="" selected disabled hidden>선택해주세요</option>
-                        <option value="epps">epps</option>
-                        <option value="kakao">kakao</option>
-                        <option value="coupang">coupang</option>
-                        <option value="google">google</option>
-                    </select>
-                </td>
-                <td class="label-cell no-border">등록일자</td>
-                <td class="input-cell"><input class="datepicker" id="boardDate" name="boardDate"></td>
-                <td class="label-cell no-border">등록자</td>
-                <td class="input-cell"><input id="boardWriter" type="text" name="boardWriter"></td>
-            </tr>
-            <tr>
-                <td class="label-cell no-border">제목</td>
-                <td colspan="3" class="input-cell"><input id="boardTitle" type="text" name="boardTitle"></td>
-                <td class="label-cell no-border">비밀번호</td>
-                <td class="input-cell"><input id="boardPassword" type="text" name="boardPassword"></td>
-            </tr>
+            <c:forEach var="board" items="${boardList}">
+                <input id="boardId" type="hidden" value="${board.boardId}" name="boardId">
+                <tr>
+                    <td class="label-cell no-border">회사</td>
+                    <td class="input-cell">
+                        <select id="boardCompany" name="boardCompany" readonly>
+                            <option value="" selected disabled hidden>선택해주세요</option>
+                            <option value="epps" <c:if test="${board.boardCompany == 'epps'}">selected</c:if>>epps</option>
+                            <option value="kakao" <c:if test="${board.boardCompany == 'kakao'}">selected</c:if>>kakao</option>
+                            <option value="coupang" <c:if test="${board.boardCompany == 'coupang'}">selected</c:if>>coupang</option>
+                            <option value="google" <c:if test="${board.boardCompany == 'google'}">selected</c:if>>google</option>
+                        </select>
+                    </td>
+                    <td class="label-cell no-border">등록일자</td>
+
+                    <td class="input-cell">
+                     <input id="boardDate" class="datepicker" name="boardDate" value="${board.boardDate}" readonly>
+                    </td>
+                    <td class="label-cell no-border">등록자</td>
+                    <td class="input-cell"><input id="boardWriter" type="text" name="boardWriter" value="${board.boardWriter}" readonly></td>
+                </tr>
+                <tr>
+                    <td class="label-cell no-border">제목</td>
+                    <td colspan="3" class="input-cell">
+                        <input id="boardTitle" type="text" name="boardTitle" value="${board.boardTitle}">
+                    </td>
+                </tr>
+
         </table>
 
         <table>
@@ -82,7 +96,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <textarea id="boardContent" name="boardContent" maxlength="1000"></textarea>
+                    <textarea id="boardContent" name="boardContent" maxlength="1000">${board.boardContent}</textarea>
                 </td>
             </tr>
             <tr>
@@ -91,6 +105,8 @@
                 </td>
             </tr>
         </table>
+
+        </c:forEach>
         <div class="button-container">
             <input id="register" type="button" value="저장">
             <input id="close" type="button" value="닫기">
@@ -149,7 +165,6 @@
         let boardDate = $('#boardDate').val();
         let boardWriter = $('#boardWriter').val();
         let boardTitle = $('#boardTitle').val();
-        let boardPassword = $('#boardPassword').val();
         let boardContent = $('#boardContent').val();
 
         if (!boardCompany) {
@@ -171,11 +186,7 @@
             $('#boardTitle').focus();
             return false;
         }
-        if (!boardPassword) {
-            alert('비밀번호를 입력해주세요.');
-            $('#boardPassword').focus();
-            return false;
-        }
+
         if (!boardContent) {
             alert('내용을 입력해주세요.');
             $('#boardContent').focus();
@@ -187,41 +198,39 @@
 
     $(function(){
 
-       // datepicker 오늘 날짜 고정 및 이전 날짜 선택 불가
-       let today = new Date();
-       $('.datepicker').datepicker({
-           minDate: 0
-       }).datepicker('setDate', today);
+       checkTextCount('#boardContent', '#textCount', 1000);
 
        // 글자 수 체크 이벤트
        $('#boardContent').on('keyup', function() {
            checkTextCount('#boardContent', '#textCount', 1000);
        });
 
-       // 닫기 누를시 리스트로
-       $('#close').on('click', function() {
-           window.location.href = '/boardList';
-       });
+        // 닫기 누를시 리스트로
+        $('#close').on('click', function() {
+            window.location.href = '/boardList';
+        });
 
        $("#register").on("click", function(){
 
            //유효성 검사
            if(validation()){
                 if (confirm("저장하시겠습니까?")) {
-                    let data = $('#boardRegister').serializeObject();
+                    let data = $('#boardUpdate').serializeObject();
                     console.log('Json으로 변환 : ' ,  JSON.stringify(data));
                          $.ajax({
-                             url: '/register',
+                             url: '/update',
                              type: 'POST',
                              data: JSON.stringify(data),
                              contentType: 'application/json',
                              success: function(response) {
-                                    if(response.response == "success"){
-                                       alert('게시물이 저장되었습니다.');
-                                       window.location.href = '/boardList';
-                                    }else{
-                                       alert('처리중 에러가 발생하였습니다.')
-                                    }
+
+                                if(response.response == "success"){
+                                    alert("게시물이 저장되었습니다.")
+                                    window.location.href = '/boardList';
+                                }else{
+                                    alert("처리중에러가 발생하였습니다.")
+                                }
+
                              },
                               error: function(jqXHR, textStatus, errorThrown) {
                                  alert('실패');

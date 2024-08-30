@@ -35,16 +35,75 @@
     </insert>
 
     <select id="boardList" resultMap="boardVo">
+            SELECT *
+            FROM (
+                SELECT
+                  BOARD_ID,
+                  BOARD_COMPANY,
+                  BOARD_TITLE,
+                  BOARD_WRITER,
+                  TO_CHAR(BOARD_DATE, 'YYYY-MM-DD') AS BOARD_DATE,
+                  ROW_NUMBER() OVER (ORDER BY BOARD_ID DESC) AS RN
+                FROM NOTICE_YONGHYEON
+                   )
+            WHERE RN BETWEEN (#{pageNum} - 1) * #{amount} + 1 AND #{pageNum} * #{amount}
+    </select>
+
+    <select id="searchBoardList" resultMap="boardVo">
+        SELECT *
+        FROM (
+                SELECT
+                  BOARD_ID,
+                  BOARD_COMPANY,
+                  BOARD_TITLE,
+                  BOARD_WRITER,
+                  TO_CHAR(BOARD_DATE, 'YYYY-MM-DD') AS BOARD_DATE,
+                  ROW_NUMBER() OVER (ORDER BY BOARD_ID DESC) AS RN
+                FROM NOTICE_YONGHYEON
+                WHERE (BOARD_COMPANY LIKE '%' || COALESCE(#{boardVo.boardCompany}, '') || '%')
+                  <if test="boardVo.startDate != null and boardVo.endDate != null">
+                    AND BOARD_DATE BETWEEN TO_DATE(#{boardVo.startDate}, 'YYYY-MM-DD') AND TO_DATE(#{boardVo.endDate}, 'YYYY-MM-DD')
+                  </if>
+                  <if test="boardVo.boardTitle != null and boardVo.boardTitle != ''">
+                    AND BOARD_TITLE LIKE '%' || #{boardVo.boardTitle,  jdbcType=VARCHAR} || '%'
+                  </if>
+                  <if test="boardVo.boardWriter != null and boardVo.boardWriter != ''">
+                    AND BOARD_WRITER LIKE '%' || #{boardVo.boardWriter,  jdbcType=VARCHAR} || '%'
+                  </if>
+             )
+<!--        WHERE RN BETWEEN (#{pageNum} - 1) * #{amount} + 1 AND #{pageNum} * #{amount}-->
+    </select>
+
+    <select id="boardCount" resultType="int">
+        SELECT COUNT(*) FROM NOTICE_YONGHYEON
+    </select>
+
+    <select id="checkPassword" resultMap="boardVo">
         SELECT
         BOARD_ID,
         BOARD_COMPANY,
         BOARD_TITLE,
         BOARD_WRITER,
-        TO_CHAR(BOARD_DATE, 'YYYY-MM-DD') AS BOARD_DATE
-        FROM
-        NOTICE_YONGHYEON
-        ORDER BY BOARD_ID DESC
+        TO_CHAR(BOARD_DATE, 'YYYY-MM-DD') AS BOARD_DATE,
+        BOARD_CONTENT,
+        BOARD_PASSWORD
+        FROM NOTICE_YONGHYEON
+        WHERE BOARD_ID = #{boardId}
     </select>
+
+    <delete id="deleteBoard">
+        DELETE
+        FROM NOTICE_YONGHYEON
+        WHERE BOARD_ID = #{boardId}
+    </delete>
+
+    <update id="updateBoard">
+
+        UPDATE NOTICE_YONGHYEON
+        SET BOARD_TITLE = #{boardTitle}, BOARD_CONTENT = #{boardContent}
+        WHERE BOARD_ID = #{boardId}
+
+    </update>
 
 
 
